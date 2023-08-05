@@ -59,6 +59,32 @@ class TaskListController: UITableViewController {
 
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        //getConfigurateTaskCell_constraints(for: indexPath)
+        getConfigurateTaskCell_stack(for: indexPath)
+    }
+    
+    private func getConfigurateTaskCell_stack(for indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "taskCellStack", for: indexPath) as! TaskCell
+        // Получаем данные о задаче, которую нужно вывести в ячейку
+        let taskType = sectionTypesPosition[indexPath.section]
+        guard let currenTask = tasks[taskType]?[indexPath.row] else {
+            return cell
+        }
+        cell.title.text = currenTask.title
+        cell.symbol.text = getSymbolForTask(with: currenTask.status)
+        
+        if currenTask.status == .planned {
+            cell.title.textColor = .black
+            cell.symbol.textColor = .black
+        } else {
+            cell.title.textColor = .lightGray
+            cell.symbol.textColor = .lightGray
+        }
+        
+        return cell
+    }
+    
+    private func getConfigurateTaskCell_constraints(for indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "taskCellConstraints", for: indexPath)
         
         // Получаем данные о задаче, которую необходимо вывести в ячейке
