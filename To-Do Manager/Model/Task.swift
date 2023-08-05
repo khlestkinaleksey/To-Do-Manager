@@ -14,7 +14,7 @@ enum TaskPriority {
     case important
 }
 
-enum TaskStatus {
+enum TaskStatus: Int {
     // Запланированная
     case planned
     // Выполненная

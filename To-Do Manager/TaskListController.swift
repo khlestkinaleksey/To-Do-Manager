@@ -8,38 +8,107 @@
 import UIKit
 
 class TaskListController: UITableViewController {
+    
+    // Хренилище задач
+    var taskStorage: TaskStorageProtocol = TaskStorage()
+    // Коллекция задач
+    var tasks: [TaskPriority:[TaskProtocol]] = [:]
+    // Порядок отображения в массиве
+    var sectionTypesPosition: [TaskPriority] = [.important, .normal]
+    var taskStatusPosition: [TaskStatus] = [.planned, .completed]
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem
+        
+        loadTasks()
+    }
+    
+    private func loadTasks() {
+        // Инициализируем пустым массивом каждый из приоритетов-типов задач
+        sectionTypesPosition.forEach { taskType in
+            tasks[taskType] = []
+        }
+        // Загрузка и разбор задач из хранилища
+        taskStorage.loadTask().forEach { task in
+            tasks[task.type]?.append(task)
+        }
+        // Сортировка списка задач
+        for (taskGroupPriority, taskGroup) in tasks {
+            tasks[taskGroupPriority] = taskGroup.sorted(by: { task1, task2 in
+                let task1Position = taskStatusPosition.firstIndex(of: task1.status) ?? 0
+                let task2Position = taskStatusPosition.firstIndex(of: task2.status) ?? 0
+                
+                return task1Position < task2Position
+            })
+        }
+        
     }
 
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
-        return 0
+        return tasks.count
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
-        return 0
+        let taskType = sectionTypesPosition[section]
+        guard let currentTaskType = tasks[taskType] else { return 0 }
+        return currentTaskType.count
     }
 
-    /*
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
-
-        // Configure the cell...
+        let cell = tableView.dequeueReusableCell(withIdentifier: "taskCellConstraints", for: indexPath)
+        
+        // Получаем данные о задаче, которую необходимо вывести в ячейке
+        let taskType = sectionTypesPosition[indexPath.section]
+        guard let currentTask = tasks[taskType]?[indexPath.row] else {
+            return cell
+        }
+        let symbolLabel = cell.viewWithTag(1) as? UILabel
+        let titleLabel = cell.viewWithTag(2) as? UILabel
+        
+        // TODO: symbolLabel
+        symbolLabel?.text = getSymbolForTask(with: currentTask.status)
+        titleLabel?.text = currentTask.title
+        
+        if currentTask.status == .planned {
+            symbolLabel?.textColor = .black
+            titleLabel?.textColor = .black
+        } else {
+            symbolLabel?.textColor = .lightGray
+            titleLabel?.textColor = .lightGray
+        }
 
         return cell
     }
-    */
+    
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        var title: String?
+        let taskType = sectionTypesPosition[section]
+        if taskType == .important {
+            title = "Важные"
+        } else if taskType == .normal {
+            title = "Текущие"
+        }
+        return title
+    }
+    
+    private func getSymbolForTask(with status: TaskStatus) -> String {
+        var resultSymbol: String
+        
+        if status == .planned {
+            resultSymbol = "\u{25CB}"
+        } else if status == .completed {
+            resultSymbol = "\u{25C9}"
+        } else {
+            resultSymbol = ""
+        }
+        
+        return resultSymbol
+    }
+    
 
     /*
     // Override to support conditional editing of the table view.
