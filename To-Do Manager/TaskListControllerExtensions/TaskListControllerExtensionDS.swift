@@ -25,6 +25,7 @@ extension TaskListController {
             return false
         }
         return true
+        
     }
     // MARK: - Указание типа-варианта редактирования ячейки
     override func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
