@@ -61,7 +61,6 @@ class TaskListController: UITableViewController {
         guard let currentTaskType = tasks[taskType] else { return 0 }
         return currentTaskType.count
     }
-
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         //getConfigurateTaskCell_constraints(for: indexPath)
