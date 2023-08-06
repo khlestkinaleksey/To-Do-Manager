@@ -12,7 +12,18 @@ class TaskListController: UITableViewController {
     // Хренилище задач
     var taskStorage: TaskStorageProtocol = TaskStorage()
     // Коллекция задач
-    var tasks: [TaskPriority:[TaskProtocol]] = [:]
+    var tasks: [TaskPriority:[TaskProtocol]] = [:] {
+        didSet {
+            for (taskGroupPriority, taskGroup) in tasks {
+                tasks[taskGroupPriority] = taskGroup.sorted(by: { task1, task2 in
+                    let task1Position = taskStatusPosition.firstIndex(of: task1.status) ?? 0
+                    let task2Position = taskStatusPosition.firstIndex(of: task2.status) ?? 0
+                    
+                    return task1Position < task2Position
+                })
+            }
+        }
+    }
     // Порядок отображения в массиве
     var sectionTypesPosition: [TaskPriority] = [.important, .normal]
     var taskStatusPosition: [TaskStatus] = [.planned, .completed]
@@ -21,6 +32,7 @@ class TaskListController: UITableViewController {
         super.viewDidLoad()
         
         loadTasks()
+        navigationItem.leftBarButtonItem = editButtonItem
     }
     
     private func loadTasks() {
@@ -32,19 +44,11 @@ class TaskListController: UITableViewController {
         taskStorage.loadTask().forEach { task in
             tasks[task.type]?.append(task)
         }
-        // Сортировка списка задач
-        for (taskGroupPriority, taskGroup) in tasks {
-            tasks[taskGroupPriority] = taskGroup.sorted(by: { task1, task2 in
-                let task1Position = taskStatusPosition.firstIndex(of: task1.status) ?? 0
-                let task2Position = taskStatusPosition.firstIndex(of: task2.status) ?? 0
-                
-                return task1Position < task2Position
-            })
-        }
-        
     }
 
     // MARK: - Table view data source
+    
+
 
     override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
@@ -135,50 +139,38 @@ class TaskListController: UITableViewController {
         return resultSymbol
     }
     
-
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
+    // Метод для изменения статуса задачи
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // Проверяем существование задачи
+        let taskType = sectionTypesPosition[indexPath.section]
+        guard let _ = tasks[taskType]?[indexPath.row] else {
+            return
+        }
+        if tasks[taskType]?[indexPath.row].status == .planned {
+            tasks[taskType]?[indexPath.row].status = .completed
+            // перезагружаем секцию таблицы
+            tableView.reloadSections(IndexSet(arrayLiteral: indexPath.section), with: .automatic)
+        } else {
+            // снимаем выделение со строки
+            tableView.deselectRow(at: indexPath, animated: true)
+            return
+        }
     }
-    */
-
-    /*
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
+    
+    override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        // Проверяем существование задачи
+        let taskType = sectionTypesPosition[indexPath.section]
+        guard let _ = tasks[taskType]?[indexPath.row] else {
+            return nil
+        }
+        guard tasks[taskType]?[indexPath.row].status == .completed else {
+            return nil
+        }
+        
+        let action = UIContextualAction(style: .normal, title: "Не выполнена") { _, _, _ in
+            self.tasks[taskType]?[indexPath.row].status = .planned
+            self.tableView.reloadSections(IndexSet(arrayLiteral: indexPath.section), with: .automatic)
+        }
+        return UISwipeActionsConfiguration(actions: [action])
     }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }
