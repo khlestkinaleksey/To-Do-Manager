@@ -35,6 +35,7 @@ class TaskListController: UITableViewController {
         navigationItem.leftBarButtonItem = editButtonItem
     }
     
+    
     private func loadTasks() {
         // Инициализируем пустым массивом каждый из приоритетов-типов задач
         sectionTypesPosition.forEach { taskType in
