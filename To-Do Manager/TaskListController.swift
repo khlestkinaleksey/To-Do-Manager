@@ -46,6 +46,7 @@ class TaskListController: UITableViewController {
             tasks[task.type]?.append(task)
         }
     }
+    
 
     // MARK: - Table view data source
 
