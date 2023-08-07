@@ -54,6 +54,7 @@ class TaskListController: UITableViewController {
         // #warning Incomplete implementation, return the number of sections
         return tasks.count
     }
+    
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let taskType = sectionTypesPosition[section]
