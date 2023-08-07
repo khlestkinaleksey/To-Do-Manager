@@ -9,7 +9,7 @@ import UIKit
 
 class TaskListController: UITableViewController {
     
-    // Хренилище задач
+    // Хранилище задач
     var taskStorage: TaskStorageProtocol = TaskStorage()
     // Коллекция задач
     var tasks: [TaskPriority:[TaskProtocol]] = [:] {
@@ -48,8 +48,6 @@ class TaskListController: UITableViewController {
     }
 
     // MARK: - Table view data source
-    
-
 
     override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
